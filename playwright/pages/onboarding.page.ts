@@ -11,9 +11,9 @@ export class OnboardingPage {
   constructor(page: Page) {
     this.page = page;
     this.welcome = page.getByText("Welcome to Slice Machine");
-    this.skip = page.getByTestId("skip-onboarding");
+    this.skip = page.getByText("skip");
     this.startButton = page.getByRole("button", { name: "Get Started" });
-    this.continueButton = page.getByTestId("continue");
+    this.continueButton = page.getByTitle("Continue");
     this.video = page.locator("video");
   }
 
@@ -21,29 +21,12 @@ export class OnboardingPage {
     await expect(this.startButton).toBeVisible();
   }
 
-  async goThroughOnboarding() {
-    await this.startButton.click();
-
-    const steps = [
-      "Build Slices",
-      "Create Page Types",
-      "Push your pages to Prismic",
-    ];
-
-    for (const [index, step] of steps.entries()) {
+  async isVideoPlaying(index: number, videoTitle: string) {
       await expect(this.video.nth(index)).toBeVisible();
+      await expect(this.video.nth(index)).toHaveJSProperty("paused", false);
       await expect(
-        this.page.getByRole("heading", { name: step })
+        this.page.getByRole("heading", { name: videoTitle })
       ).toBeVisible();
-      await this.continueButton.click();
-    }
-
-    await expect(this.continueButton).not.toBeVisible();
   }
 
-  async skipOnboarding() {
-    await this.startButton.click();
-    await this.skip.click();
-    await expect(this.startButton).not.toBeVisible();
-  }
 }

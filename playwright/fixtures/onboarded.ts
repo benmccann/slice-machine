@@ -1,25 +1,20 @@
-import { test as base, Page } from "@playwright/test";
+import { test as base } from "./app";
 import config from "../playwright.config";
 
-// fixture to provide tests with a page containing the localStorage of an onboarded user to disable user guides and tutorials.
-
-type OnboardedFixture = {
-  page: Page;
-};
-
-// Extend base test by providing "todoPage" and "settingsPage".
-// This new "test" can be used in multiple test files, and each of them will get the fixtures.
 const onboardedModel = {
   userContext: JSON.stringify({
     hasSendAReview: true,
     isOnboarded: true,
     updatesViewed: { latest: null, latestNonBreaking: null },
+    hasSeenSimulatorToolTip: true,
     hasSeenTutorialsTooTip: true,
     authStatus: "unknown",
     lastSyncChange: null,
   }),
 };
-export const test = base.extend<OnboardedFixture>({
+
+// fixture to provide tests with a page containing the localStorage of an onboarded user to disable user guides and tutorials.
+export const test = base.extend<{}>({
   page: async ({ browser }, use) => {
     const context = await browser.newContext({
       storageState: {
@@ -42,7 +37,9 @@ export const test = base.extend<OnboardedFixture>({
     // Use the fixture value in the test.
     await use(page);
 
+    // Gracefully close up everything
     await page.close();
+    await context.close();
     await browser.close();
   },
 });

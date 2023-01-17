@@ -2,23 +2,25 @@ import { expect, Locator, Page } from "@playwright/test";
 
 export class MenuPage {
   readonly page: Page;
-  readonly AppHeader: Locator;
+  readonly appHeader: Locator;
   readonly customTypesLink: Locator;
   readonly slicesLink: Locator;
   readonly changesLink: Locator;
   readonly tutorialLink: Locator;
   readonly changelogLink: Locator;
   readonly appVersion: Locator;
+  readonly changesIcon: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.AppHeader = page.locator("h5", { hasText: "Slice Machine" });
+    this.appHeader = page.locator("h5", { hasText: "Slice Machine" });
     this.customTypesLink = page.locator("nav a", { hasText: "Custom Types" });
     this.slicesLink = page.locator("nav a", { hasText: "Slices" });
     this.changesLink = page.locator("nav a", { hasText: "Changes" });
     this.tutorialLink = page.locator("a", { hasText: "Video tutorials" });
     this.changelogLink = page.locator("a", { hasText: "Changelog" });
     this.appVersion = page.locator('a[href="/changelog"] > div:nth-child(2)');
+    this.appVersion = page.getByTestId('changes-number');
   }
 
   async gotoCustomTypes() {

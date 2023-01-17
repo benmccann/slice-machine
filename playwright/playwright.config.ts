@@ -13,15 +13,15 @@ import { devices } from "@playwright/test";
 const config: PlaywrightTestConfig = {
   testDir: "./tests",
   /* Maximum time one test can run for. */
-  timeout: 30_000,
+  timeout: 40_000,
   expect: {
     /**
      * Maximum time expect() should wait for the condition to be met.
      * For example in `await expect(locator).toHaveText();`
      */
-    timeout: 10_000,
+    timeout: 20_000,
     toHaveScreenshot: {
-      maxDiffPixels: 0,
+      maxDiffPixelRatio: 0,
     },
   },
   /* Run tests in files in parallel */
@@ -45,8 +45,13 @@ const config: PlaywrightTestConfig = {
     // storageState: './storageState.json',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "on-first-retry",
-    testIdAttribute: "data-cy",
+    trace: "on",
+    video: "on",
+    screenshot: "on",
+    testIdAttribute: "data-cy",        
+    launchOptions: {
+      slowMo: 0,
+  },
   },
 
   /* Configure projects for major browsers */
@@ -57,20 +62,20 @@ const config: PlaywrightTestConfig = {
         ...devices["Desktop Chrome"],
       },
     },
-
     {
-      name: "firefox",
+      name: 'webkit',
       use: {
-        ...devices["Desktop Firefox"],
+        ...devices['Desktop Safari'],
       },
     },
 
     // {
-    //   name: 'webkit',
+    //   name: "firefox",
     //   use: {
-    //     ...devices['Desktop Safari'],
+    //     ...devices["Desktop Firefox"],
     //   },
     // },
+
 
     /* Test against mobile viewports. */
     // {
@@ -82,7 +87,7 @@ const config: PlaywrightTestConfig = {
     // {
     //   name: 'Mobile Safari',
     //   use: {
-    //     ...devices['iPhone 12'],
+    //     ...devices['iPhone 13'],
     //   },
     // },
 

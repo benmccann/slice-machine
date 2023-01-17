@@ -1,39 +1,37 @@
 import { expect } from "@playwright/test";
 import { test } from "../fixtures/onboarded";
-import { CreateSliceModalPage } from "../pages/slices/createSliceModal.page";
-import { SliceDetailsPage } from "../pages/slices/sliceDetails.page";
-import { SliceListPage } from "../pages/slices/sliceList.page";
 
 test("As an onboarded user, I can only use Pascal case slice names", async ({
-  page,
+  browserName,
+  sliceListPage,
+  createSliceModalPage,
 }) => {
-  const sliceListPage = new SliceListPage(page);
-  const createSliceModalPage = new CreateSliceModalPage(page);
-
   await sliceListPage.goto();
   await sliceListPage.openCreateModal();
 
-  await createSliceModalPage.nameInput.type("Invalid Slice Name");
-  await expect(createSliceModalPage.submitButton).toBeDisabled();
+  const { nameInput, submitButton } = createSliceModalPage;
 
-  await createSliceModalPage.nameInput.clear();
-  await createSliceModalPage.nameInput.type("Invalid_slice_name");
-  await expect(createSliceModalPage.submitButton).toBeDisabled();
+  await nameInput.type("Invalid Slice Name");
+  await expect(submitButton).toBeDisabled();
 
-  await createSliceModalPage.nameInput.clear();
-  await createSliceModalPage.nameInput.type("123SliceName");
-  await expect(createSliceModalPage.submitButton).toBeDisabled();
+  await nameInput.clear();
+  await nameInput.type("Invalid_slice_name");
+  await expect(submitButton).toBeDisabled();
 
-  await createSliceModalPage.nameInput.clear();
-  await createSliceModalPage.nameInput.type("ValidSliceName");
-  await expect(createSliceModalPage.submitButton).toBeEnabled();
+  await nameInput.clear();
+  await nameInput.type("123SliceName");
+  await expect(submitButton).toBeDisabled();
+
+  await nameInput.clear();
+  await nameInput.type("ValidSliceName");
+  await expect(submitButton).toBeEnabled();
 });
 
-test("As an onboarded user, I can create a new Slice", async ({ page }) => {
-  const sliceListPage = new SliceListPage(page);
-  const sliceDetailsPage = new SliceDetailsPage(page);
-  const createSliceModalPage = new CreateSliceModalPage(page);
-
+test("As an onboarded user, I can create a new Slice", async ({
+  sliceDetailsPage,
+  sliceListPage,
+  createSliceModalPage,
+}) => {
   await sliceListPage.goto();
   await sliceListPage.openCreateModal();
 
