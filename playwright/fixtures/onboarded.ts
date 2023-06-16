@@ -4,7 +4,6 @@ import config from "../playwright.config";
 const onboardedModel = {
   userContext: JSON.stringify({
     hasSendAReview: true,
-    isOnboarded: true,
     updatesViewed: { latest: null, latestNonBreaking: null },
     hasSeenSimulatorToolTip: true,
     hasSeenTutorialsTooTip: true,
@@ -21,7 +20,7 @@ export const test = base.extend<{}>({
         cookies: [],
         origins: [
           {
-            origin: config.use?.baseURL || "",
+            origin: config.use?.baseURL as string,
             localStorage: [
               {
                 name: "persist:root",

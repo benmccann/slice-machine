@@ -4,6 +4,7 @@ import { OnboardingPage } from "../pages/onboarding.page";
 import { CreateSliceModalPage } from "../pages/slices/createSliceModal.page";
 import { SliceDetailsPage } from "../pages/slices/sliceDetails.page";
 import { SliceListPage } from "../pages/slices/sliceList.page";
+import { AddFieldModalPage } from "../pages/slices/addFieldModal.page";
 
 // Declare the types of your fixtures.
 type MyFixtures = {

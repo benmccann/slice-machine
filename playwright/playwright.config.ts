@@ -1,23 +1,18 @@
 import type { PlaywrightTestConfig } from "@playwright/test";
 import { devices } from "@playwright/test";
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
+/** Read environment variables from file. https://github.com/motdotla/dotenv */
 // require('dotenv').config();
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+/** See https://playwright.dev/docs/test-configuration. */
 const config: PlaywrightTestConfig = {
   testDir: "./tests",
   /* Maximum time one test can run for. */
-  timeout: 40_000,
+  timeout: 30_000,
   expect: {
     /**
-     * Maximum time expect() should wait for the condition to be met.
-     * For example in `await expect(locator).toHaveText();`
+     * Maximum time expect() should wait for the condition to be met. For
+     * example in `await expect(locator).toHaveText();`
      */
     timeout: 20_000,
     toHaveScreenshot: {
@@ -33,7 +28,7 @@ const config: PlaywrightTestConfig = {
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: "html",
+  // reporter: "html",
   // globalSetup: require.resolve('./global-setup.ts'),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
@@ -48,14 +43,18 @@ const config: PlaywrightTestConfig = {
     trace: "on",
     video: "on",
     screenshot: "on",
-    testIdAttribute: "data-cy",        
-    launchOptions: {
-      slowMo: 0,
-  },
+    testIdAttribute: "data-cy",
   },
 
   /* Configure projects for major browsers */
   projects: [
+    {
+      name: "Smoke Chromium",
+      testDir: "./tests/smoke",
+      use: {
+        ...devices["Desktop Chrome"],
+      },
+    },
     {
       name: "chromium",
       use: {
@@ -63,47 +62,11 @@ const config: PlaywrightTestConfig = {
       },
     },
     {
-      name: 'webkit',
+      name: "webkit",
       use: {
-        ...devices['Desktop Safari'],
+        ...devices["Desktop Safari"],
       },
     },
-
-    // {
-    //   name: "firefox",
-    //   use: {
-    //     ...devices["Desktop Firefox"],
-    //   },
-    // },
-
-
-    /* Test against mobile viewports. */
-    // {
-    //   name: 'Mobile Chrome',
-    //   use: {
-    //     ...devices['Pixel 5'],
-    //   },
-    // },
-    // {
-    //   name: 'Mobile Safari',
-    //   use: {
-    //     ...devices['iPhone 13'],
-    //   },
-    // },
-
-    /* Test against branded browsers. */
-    // {
-    //   name: 'Microsoft Edge',
-    //   use: {
-    //     channel: 'msedge',
-    //   },
-    // },
-    // {
-    //   name: 'Google Chrome',
-    //   use: {
-    //     channel: 'chrome',
-    //   },
-    // },
   ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */

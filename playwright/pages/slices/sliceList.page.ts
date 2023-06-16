@@ -16,12 +16,15 @@ export class SliceListPage {
   }
 
   getSliceCard(name: string): Locator {
-    return this.page.locator(`a[href^="/slices/${name}/"]`);
+    return this.page.getByRole("button", {
+      name: `${name} slice card`,
+      exact: true,
+    });
   }
 
   async clickSliceCard(name: string) {
     // Make sure not to accidentaly click on a button that would trigger another action
-    await this.getSliceCard(name).getByRole("heading", { name }).click();
+    await this.getSliceCard(name).getByRole("button", { name }).click();
   }
 
   async openCreateModal() {
