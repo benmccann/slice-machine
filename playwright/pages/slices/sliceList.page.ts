@@ -2,21 +2,27 @@ import { Locator, Page } from "@playwright/test";
 
 export class SliceListPage {
   readonly page: Page;
+  readonly title: Locator;
+  readonly root: Locator;
   readonly createButton: Locator;
   readonly actionIcon: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.createButton = page.getByRole("button", { name: "Create a Slice" }); //create-slice
-    this.actionIcon = page.getByTestId("slice-action-icon");
+    this.root = page.getByRole("main").first();
+    this.title = this.root.getByRole("link", { name: "Slices", exact: true });
+    this.createButton = this.root
+      .getByRole("button", { name: "Create one" })
+      .or(this.root.getByRole("button", { name: "Create a Slice" }));
+    this.actionIcon = this.root.getByTestId("slice-action-icon");
   }
 
   async goto() {
     await this.page.goto("/slices");
   }
 
-  getSliceCard(name: string): Locator {
-    return this.page.getByRole("button", {
+  getCard(name: string): Locator {
+    return this.root.getByRole("button", {
       name: `${name} slice card`,
       exact: true,
     });
@@ -24,22 +30,22 @@ export class SliceListPage {
 
   async clickSliceCard(name: string) {
     // Make sure not to accidentaly click on a button that would trigger another action
-    await this.getSliceCard(name).getByRole("button", { name }).click();
+    await this.getCard(name).getByRole("button", { name }).click();
   }
 
   async openCreateModal() {
-    await this.createButton.click();
+    await this.createButton.first().click();
   }
 
   async openActionModal(name: string, action: "Rename" | "Delete") {
-    await this.getSliceCard(name)
+    await this.getCard(name)
       .getByTestId("slice-action-icon-dropdown")
       .getByText(action)
       .click();
   }
 
   async openScreenshotModal(name: string) {
-    await this.getSliceCard(name).getByRole("button", {
+    await this.getCard(name).getByRole("button", {
       name: "Update Screenshot",
     });
   }

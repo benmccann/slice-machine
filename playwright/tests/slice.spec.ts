@@ -42,9 +42,9 @@ test("As an onboarded user, I can create a new Slice", async ({
   await expect(sliceDetailsPage.title).toBeVisible();
   await expect(sliceDetailsPage.title).toContainText(sliceName);
 
-  await expect(
-    sliceDetailsPage.nonRepeatableZone.getByRole("listitem")
-  ).toHaveCount(2);
+  await expect(sliceDetailsPage.staticZone.getByRole("listitem")).toHaveCount(
+    0
+  );
   await expect(
     sliceDetailsPage.repeatableZone.getByRole("listitem")
   ).toHaveCount(0);

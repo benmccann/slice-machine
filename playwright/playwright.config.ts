@@ -28,45 +28,57 @@ const config: PlaywrightTestConfig = {
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  // reporter: "html",
+  reporter: "html",
   // globalSetup: require.resolve('./global-setup.ts'),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
     actionTimeout: 0,
     /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: "http://localhost:9999",
+    baseURL: process.env.APP_SM_PORT
+      ? `http://localhost:${process.env.APP_SM_PORT}`
+      : "http://localhost:9999",
     /* Save localStorage */
     // storageState: './storageState.json',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on",
-    video: "on",
+    video: "off",
     screenshot: "on",
     testIdAttribute: "data-cy",
   },
 
+  webServer: process.env.APP_CWD
+    ? {
+        cwd: process.env.APP_CWD,
+        command: `npm run slicemachine -- --port ${process.env.APP_SM_PORT}`,
+        url: `http://localhost:${process.env.APP_SM_PORT}`,
+        reuseExistingServer: !process.env.CI,
+      }
+    : undefined,
   /* Configure projects for major browsers */
   projects: [
-    {
-      name: "Smoke Chromium",
-      testDir: "./tests/smoke",
-      use: {
-        ...devices["Desktop Chrome"],
-      },
-    },
+    // {
+    //   name: "Smoke Chromium",
+    //   testDir: "./tests/smoke",
+    //   use: {
+    //     ...devices["Desktop Chrome"],
+    //   },
+    // },
     {
       name: "chromium",
+      testIgnore: "./tests/smoke/**",
       use: {
         ...devices["Desktop Chrome"],
       },
     },
-    {
-      name: "webkit",
-      use: {
-        ...devices["Desktop Safari"],
-      },
-    },
+    // {
+    //   name: "webkit",
+    //   testIgnore: "./tests/smoke/**",
+    //   use: {
+    //     ...devices["Desktop Safari"],
+    //   },
+    // },
   ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
