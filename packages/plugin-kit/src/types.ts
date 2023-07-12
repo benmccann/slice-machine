@@ -89,6 +89,11 @@ export type SliceLibrary = {
 	id: string;
 };
 
+export type WorkflowResponse = {
+	kind: "Navigation";
+	url: string;
+};
+
 // ============================================================================
 //
 // # HOOK TYPES
