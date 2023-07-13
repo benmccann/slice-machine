@@ -1,3 +1,6 @@
+import { getHookErrors } from "../getHookErrors";
+import { getHookValues } from "../getHookValues";
+
 /**
  * Extends a function arguments with extra ones.
  */
@@ -48,14 +51,47 @@ type HookMetaArg<THookMeta extends Record<string, unknown> | undefined> =
 		: [meta?: never];
 
 /**
+ * Represents a value returned by a hook.
+ *
+ * @internal
+ */
+export type CallHookDetailedValue<TValue = unknown> = {
+	hookID: string;
+	owner: string;
+	value: TValue;
+};
+
+/**
+ * Represents an error thrown by a hook.
+ *
+ * @internal
+ */
+export type CallHookDetailedError = {
+	hookID: string;
+	owner: string;
+	error: HookError;
+};
+
+/**
+ * Defines the return type of the {@link HookSystem.callHookWithDetails}
+ * functions.
+ *
+ * @internal
+ */
+export type CallHookWithDetailsReturnType<THookFn extends HookFn = HookFn> = {
+	data: CallHookDetailedValue<Awaited<ReturnType<THookFn>>>[];
+	errors: CallHookDetailedError[];
+};
+
+/**
  * Defines the return type of the {@link HookSystem.callHook} functions.
  *
  * @internal
  */
-export type CallHookReturnType<THookFn extends HookFn = HookFn> = Promise<{
+export type CallHookReturnType<THookFn extends HookFn = HookFn> = {
 	data: Awaited<ReturnType<THookFn>>[];
 	errors: HookError[];
-}>;
+};
 
 /**
  * Defines the return type of the {@link HookSystem.createScope} functions.
@@ -70,7 +106,7 @@ export type CreateScopeReturnType<
 		type: TType,
 		hookFn: FnWithExtraArgs<THooks[TType]["fn"], TExtraArgs>,
 		...[meta]: HookMetaArg<THooks[TType]["meta"]>
-	) => void;
+	) => ReturnType<HookSystem["hook"]>;
 	unhook: HookSystem<{
 		[P in keyof THooks]: Omit<THooks[P], "fn"> & {
 			fn: FnWithExtraArgs<THooks[P]["fn"], TExtraArgs>;
@@ -134,14 +170,16 @@ export class HookSystem<THooks extends Hooks = Hooks> {
 		type: TType,
 		hookFn: THooks[TType]["fn"],
 		...[meta]: HookMetaArg<THooks[TType]["meta"]>
-	): void {
+	): string {
+		const id = uuid();
+
 		const registeredHook = {
 			fn: hookFn,
 			meta: {
 				...meta,
 				owner,
 				type,
-				id: uuid(),
+				id,
 			},
 		} as RegisteredHook<THooks[TType]>;
 
@@ -152,6 +190,8 @@ export class HookSystem<THooks extends Hooks = Hooks> {
 		} else {
 			this._registeredHooks[type] = [registeredHook];
 		}
+
+		return id;
 	}
 
 	unhook<TType extends keyof THooks>(
@@ -169,7 +209,22 @@ export class HookSystem<THooks extends Hooks = Hooks> {
 			| { type: TType; hookID: string }
 			| { type: TType; owner: string },
 		...args: Parameters<THooks[TType]["fn"]>
-	): CallHookReturnType<THooks[TType]["fn"]> {
+	): Promise<CallHookReturnType<THooks[TType]["fn"]>> {
+		const hookResults = await this.callHookWithDetails(hookDescriptor, ...args);
+
+		return {
+			data: getHookValues(hookResults),
+			errors: getHookErrors(hookResults),
+		};
+	}
+
+	async callHookWithDetails<TType extends Extract<keyof THooks, string>>(
+		hookDescriptor:
+			| TType
+			| { type: TType; hookID: string }
+			| { type: TType; owner: string },
+		...args: Parameters<THooks[TType]["fn"]>
+	): Promise<CallHookWithDetailsReturnType<THooks[TType]["fn"]>> {
 		let hooks: RegisteredHook<THooks[TType]>[];
 
 		if (typeof hookDescriptor === "string") {
@@ -199,18 +254,27 @@ export class HookSystem<THooks extends Hooks = Hooks> {
 
 		const promises = hooks.map(async (hook) => {
 			try {
-				return await hook.fn(...args);
+				const value = await hook.fn(...args);
+
+				return {
+					hookID: hook.meta.id,
+					owner: hook.meta.owner,
+					value,
+				};
 			} catch (error) {
-				throw new HookError(hook.meta, error);
+				throw {
+					hookID: hook.meta.id,
+					owner: hook.meta.owner,
+					error: new HookError(hook.meta, error),
+				};
 			}
 		});
 
 		const settledPromises = await Promise.allSettled(promises);
 
-		return settledPromises.reduce<{
-			data: Awaited<ReturnType<THooks[TType]["fn"]>>[];
-			errors: HookError[];
-		}>(
+		return settledPromises.reduce<
+			Awaited<CallHookWithDetailsReturnType<THooks[TType]["fn"]>>
+		>(
 			(acc, settledPromise) => {
 				if (settledPromise.status === "fulfilled") {
 					acc.data.push(settledPromise.value);

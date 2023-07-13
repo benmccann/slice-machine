@@ -167,8 +167,8 @@ it("returns hook errors in order", async () => {
 		throw "bar";
 	});
 
-	system.hook("baz", "hook1", foo);
-	system.hook("qux", "hook1", bar);
+	const id1 = system.hook("baz", "hook1", foo);
+	const id2 = system.hook("qux", "hook1", bar);
 
 	const result = await system.callHook("hook1");
 
@@ -177,12 +177,14 @@ it("returns hook errors in order", async () => {
 
 	expect(result.errors[0]).toBeInstanceOf(HookError);
 	expect(result.errors[0].owner).toBe("baz");
-	expect(result.errors[0].cause).toBeInstanceOf(Error);
+	expect(result.errors[0].hookID).toBe(id1);
+	expect(result.errors[0].error.cause).toBeInstanceOf(Error);
 
 	expect(result.errors[1]).toBeInstanceOf(HookError);
 	expect(result.errors[1].owner).toBe("qux");
-	expect(result.errors[1].cause).toBe(undefined);
-	expect(result.errors[1].rawCause).toBe("bar");
+	expect(result.errors[1].hookID).toBe(id2);
+	expect(result.errors[1].error.cause).toBe(undefined);
+	expect(result.errors[1].error.rawCause).toBe("bar");
 });
 
 it("allows inspection of registered hooks for owner", () => {
@@ -243,14 +245,8 @@ it("calls only hook with specified hook ID", async () => {
 	const foo = vi.fn();
 	const bar = vi.fn();
 
-	system.hook("foo", "hook1", foo);
+	const id = system.hook("foo", "hook1", foo);
 	system.hook("bar", "hook1", bar);
-
-	const [
-		{
-			meta: { id },
-		},
-	] = system.hooksForType("hook1");
 
 	await system.callHook({ type: "hook1", hookID: id });
 

@@ -188,6 +188,9 @@ export class SliceMachinePluginRunner {
 				[context],
 			);
 
+		// TODO: Property type the function type to support `undefined`
+		// return values (when a hook is purposely not registered)
+
 		// Prevent plugins from hooking to adapter only hooks
 		const hook: typeof hookSystemScope.hook =
 			as === "adapter"

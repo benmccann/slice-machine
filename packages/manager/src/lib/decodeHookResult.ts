@@ -1,5 +1,5 @@
 import * as t from "io-ts";
-import { CallHookReturnType, HookError } from "@slicemachine/plugin-kit";
+import { CallHookReturnType } from "@slicemachine/plugin-kit";
 
 import { DecodeError } from "./DecodeError";
 import { decode } from "./decode";
@@ -8,13 +8,13 @@ export const decodeHookResult = <
 	A,
 	O,
 	I,
-	THookResult extends Awaited<CallHookReturnType>,
+	THookResult extends CallHookReturnType,
 >(
 	codec: t.Type<A, O, I>,
 	hookResult: THookResult,
 ): {
-	data: A[];
-	errors: (HookError | DecodeError<I>)[];
+	data: CallHookReturnType["data"];
+	errors: (CallHookReturnType["errors"][number] | DecodeError<I>)[];
 } => {
 	const data: A[] = [];
 	const errors: DecodeError<I>[] = [];
