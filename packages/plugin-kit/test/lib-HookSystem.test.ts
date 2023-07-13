@@ -265,3 +265,21 @@ it("throws when hook with specified hook ID is not found", async () => {
 		system.callHook({ type: "hook1", hookID: "-1" }),
 	).rejects.toThrowError(`Hook of type \`hook1\` with ID \`-1\` not found.`);
 });
+
+it("calls only hooks with specified hook owner", async () => {
+	const system = new HookSystem();
+
+	const foo = vi.fn();
+	const bar = vi.fn();
+	const baz = vi.fn();
+
+	system.hook("owner1", "hook1", foo);
+	system.hook("owner1", "hook1", bar);
+	system.hook("owner2", "hook1", baz);
+
+	await system.callHook({ type: "hook1", owner: "owner1" });
+
+	expect(foo).toHaveBeenCalledTimes(1);
+	expect(bar).toHaveBeenCalledTimes(1);
+	expect(baz).toHaveBeenCalledTimes(0);
+});

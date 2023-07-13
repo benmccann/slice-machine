@@ -164,25 +164,37 @@ export class HookSystem<THooks extends Hooks = Hooks> {
 	}
 
 	async callHook<TType extends Extract<keyof THooks, string>>(
-		typeOrTypeAndHookID: TType | { type: TType; hookID: string },
+		hookDescriptor:
+			| TType
+			| { type: TType; hookID: string }
+			| { type: TType; owner: string },
 		...args: Parameters<THooks[TType]["fn"]>
 	): CallHookReturnType<THooks[TType]["fn"]> {
 		let hooks: RegisteredHook<THooks[TType]>[];
 
-		if (typeof typeOrTypeAndHookID === "string") {
-			hooks = this._registeredHooks[typeOrTypeAndHookID] ?? [];
-		} else {
-			const hookForID = this._registeredHooks[typeOrTypeAndHookID.type]?.find(
-				(hook) => hook.meta.id === typeOrTypeAndHookID.hookID,
+		if (typeof hookDescriptor === "string") {
+			hooks = this._registeredHooks[hookDescriptor] ?? [];
+		} else if ("hookID" in hookDescriptor) {
+			const hookForID = this._registeredHooks[hookDescriptor.type]?.find(
+				(hook) => hook.meta.id === hookDescriptor.hookID,
 			);
 
 			if (hookForID) {
 				hooks = [hookForID];
 			} else {
 				throw new Error(
-					`Hook of type \`${typeOrTypeAndHookID.type}\` with ID \`${typeOrTypeAndHookID.hookID}\` not found.`,
+					`Hook of type \`${hookDescriptor.type}\` with ID \`${hookDescriptor.hookID}\` not found.`,
 				);
 			}
+		} else if ("owner" in hookDescriptor) {
+			hooks = this.hooksForOwner(hookDescriptor.owner).filter(
+				(hook): hook is RegisteredHook<THooks[TType]> =>
+					hook.meta.type === hookDescriptor.type,
+			);
+		} else {
+			throw new Error(
+				"Invalid hook descriptor. Provide a type, hook ID, or owner.",
+			);
 		}
 
 		const promises = hooks.map(async (hook) => {
