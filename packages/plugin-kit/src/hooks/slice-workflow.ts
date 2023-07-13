@@ -5,7 +5,8 @@ import type {
 } from "../types";
 
 /**
- * An object representing a Slice workflow.
+ * An object representing a Slice workflow. The ID should be unique among all of
+ * a plugin's Slice workflows; IDs do not need to be globally unique.
  */
 export type SliceWorkflow = {
 	id: string;
