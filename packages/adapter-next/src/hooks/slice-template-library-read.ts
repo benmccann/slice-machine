@@ -15,10 +15,6 @@ export const sliceTemplateLibraryRead: SliceTemplateLibraryReadHook<
 	templateIds,
 	isTypeScriptProject,
 }: SliceTemplateLibraryReadHookData) => {
-	console.log("THIS IS NOT CALLED");
-	return {
-		templates: [{ model: {}, mocks: "", componentContents: "hi!"}]
-	}
 	const templates =
 		templateIds && templateIds.length
 			? initialTemplates.filter((t) => templateIds?.includes(t.model.id))

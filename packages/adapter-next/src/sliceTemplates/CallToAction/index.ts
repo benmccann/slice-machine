@@ -118,7 +118,4 @@ export const model: SharedSlice = {
 	],
 };
 
-export const screenshots = {
-	default: fs.readFileSync("./screenshot-default.png"),
-	alignLeft: fs.readFileSync("./screenshot-alignLeft.png"),
-};
+export const screenshots = {};
